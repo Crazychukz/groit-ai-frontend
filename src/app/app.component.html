@@ -1,0 +1,145 @@
+<main class="page">
+  <header class="hero">
+    <div class="hero-content">
+      <div class="top-logo">
+        <img src="assets/greeo-logo.svg" alt="Greeo logo" class="logo" />
+      </div>
+      <h1>Tales by moonlight, for a modern world</h1>
+      <p class="subhead">
+        Greeo transforms modern news into culturally rich stories told in the style
+        of African oral tradition — blending proverbs, wisdom, and AI-powered narration.
+      </p>
+      <form (ngSubmit)="submit()" class="hero-form">
+        <div class="input-shell">
+          <textarea
+            [(ngModel)]="inputValue"
+            name="inputValue"
+            rows="2"
+            class="hero-input"
+            placeholder="Paste a public URL or the full article text..."
+          ></textarea>
+        </div>
+        <div class="form-row">
+          <div class="tone-label">
+            <span>Tone:</span>
+            <strong>{{ activeToneLabel }}</strong>
+          </div>
+          <div class="tone-grid">
+            <button
+              type="button"
+              class="tone-chip"
+              *ngFor="let option of tones"
+              [class.active]="tone === option.value"
+              [title]="option.label"
+              (click)="tone = option.value"
+            >
+              <span class="tone-icon">{{ toneIcons[option.value] }}</span>
+              <span class="tone-text">{{ option.label }}</span>
+            </button>
+          </div>
+          <button type="submit" class="primary submit-btn" [disabled]="loading || audioLoading">Generate story</button>
+        </div>
+        <div class="form-row">
+          <button type="button" class="ghost" (click)="runTtsTest()" [disabled]="ttsTestLoading">
+            {{ ttsTestLoading ? 'Testing TTS...' : 'Test Gemini TTS' }}
+          </button>
+          <span class="muted" *ngIf="ttsTestAudio">TTS ready</span>
+        </div>
+        <div class="error" *ngIf="ttsTestError">{{ ttsTestError }}</div>
+        <audio *ngIf="ttsTestAudio" [src]="ttsTestAudio" controls></audio>
+        <div *ngIf="models.length" class="muted">{{ models.length }} models loaded</div>
+        <div *ngIf="error" class="error">{{ error }}</div>
+        <div *ngIf="loading" class="muted">Processing... {{ status }}</div>
+        <div *ngIf="audioLoading" class="muted">Generating narration...</div>
+      </form>
+    </div>
+  </header>
+
+  <section class="panel" *ngIf="audioSrc">
+    <h2>Audio narration</h2>
+    <div class="realtime-hero">
+      <button type="button" class="realtime-btn" (click)="startRealtimeNarration()" [disabled]="realtimeReading || loading || audioLoading">
+        {{ realtimeReading ? 'Reading Live...' : '▶ Play Realtime' }}
+      </button>
+      <button type="button" class="realtime-btn stop" (click)="stopRealtimeNarration()" [disabled]="!realtimeReading">
+        ■ Stop Realtime
+      </button>
+    </div>
+    <div class="wave-visual" *ngIf="realtimeReading">
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+    </div>
+    <audio [src]="audioSrc" controls></audio>
+
+    <div class="subtitles" *ngIf="subtitles.length">
+      <h3>Subtitles</h3>
+      <div class="subtitle-line" *ngFor="let cue of subtitles">
+        <span class="timestamp">{{ cue.start_sec | number: '1.0-2' }}s</span>
+        <span>{{ cue.text }}</span>
+      </div>
+    </div>
+  </section>
+  <section class="panel" *ngIf="storyText && !audioSrc">
+    <h2>Audio narration</h2>
+    <div class="realtime-hero">
+      <button type="button" class="realtime-btn" (click)="startRealtimeNarration()" [disabled]="realtimeReading || loading || audioLoading">
+        {{ realtimeReading ? 'Reading Live...' : '▶ Play Realtime' }}
+      </button>
+      <button type="button" class="realtime-btn stop" (click)="stopRealtimeNarration()" [disabled]="!realtimeReading">
+        ■ Stop Realtime
+      </button>
+    </div>
+    <div class="wave-visual" *ngIf="realtimeReading">
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+    </div>
+    <p class="muted">Realtime reads sentence by sentence from the story text.</p>
+    <p class="muted" *ngIf="audioLoading">Generating narration...</p>
+    <p class="muted" *ngIf="!audioLoading">Audio not available for this story yet.</p>
+  </section>
+
+  <section class="panel" *ngIf="storyText">
+    <h2>Moonlight Story</h2>
+    <p class="story">{{ storyText }}</p>
+
+    <div class="meta">
+      <div>
+        <h3>Moral</h3>
+        <p>{{ moral }}</p>
+      </div>
+      <div *ngIf="themes.length">
+        <h3>Themes</h3>
+        <ul>
+          <li *ngFor="let theme of themes">{{ theme }}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="proverbMatch">
+    <h2>Proverb Match</h2>
+    <div class="proverb-block" *ngIf="proverbMatch.best">
+      <h3>Best Fit</h3>
+      <p class="proverb-text">{{ proverbMatch.best.text }}</p>
+      <p class="proverb-reason">{{ proverbMatch.best.reason }}</p>
+    </div>
+
+    <div class="proverb-block" *ngIf="proverbMatch.alternates?.length">
+      <h3>Alternates</h3>
+      <div *ngFor="let alt of proverbMatch.alternates" class="alternate">
+        <p class="proverb-text">{{ alt.text }}</p>
+        <p class="proverb-reason">{{ alt.reason }}</p>
+      </div>
+    </div>
+  </section>
+</main>
