@@ -245,6 +245,7 @@ export class AppComponent implements OnDestroy {
           this.audioLoading = false;
           this.loading = false;
           this.stopDrum();
+          this.scrollToAudioCard();
         },
         error: (err) => {
           this.loading = false;
@@ -306,6 +307,23 @@ export class AppComponent implements OnDestroy {
     });
   }
 
+  private scrollToAudioCard(): void {
+    let attempts = 0;
+    const maxAttempts = 8;
+    const timer = setInterval(() => {
+      attempts += 1;
+      const target = document.querySelector('.audio-card');
+      if (target && 'scrollIntoView' in target) {
+        clearInterval(timer);
+        (target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (attempts >= maxAttempts) {
+        clearInterval(timer);
+      }
+    }, 120);
+  }
+
   async startRealtimeNarration(): Promise<void> {
     const script = this.buildNarrationScript(this.storyText);
     if (!script || this.realtimeReading) {
@@ -316,7 +334,7 @@ export class AppComponent implements OnDestroy {
     this.stopRealtimeNarration();
     this.realtimeReading = true;
     this.startAmbientBackdrop();
-    const chunks = this.buildRealtimeChunks(script, 1);
+    const chunks = this.buildRealtimeChunks(script, 3);
 
     try {
       for (const chunk of chunks) {
@@ -379,7 +397,7 @@ export class AppComponent implements OnDestroy {
     }
     const chunks: string[] = [];
     for (let i = 0; i < sentences.length; i += sentenceBatchSize) {
-      chunks.push(sentences.slice(i, i + sentenceBatchSize).join(' '));
+      chunks.push(sentences.slice(i, i + sentenceBatchSize).join(' ... '));
     }
     return chunks;
   }

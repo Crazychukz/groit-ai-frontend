@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8000',
-  graphqlUrl: 'http://localhost:8000/graphql/'
+  apiBaseUrl: 'https://api.greeo.xyz',
+  graphqlUrl: 'https://api.greeo.xyz/graphql/'
 };
 
 /*

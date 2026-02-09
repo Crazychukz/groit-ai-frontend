@@ -1,4 +1,9 @@
 <main class="page">
+  <div class="perimeter-loader" *ngIf="loading || audioLoading">
+    <span class="trace"></span>
+    <span class="trace-runner"></span>
+    <span class="trace-runner alt"></span>
+  </div>
   <header class="hero">
     <div class="hero-content">
       <div class="top-logo">
@@ -39,12 +44,14 @@
           </div>
           <button type="submit" class="primary submit-btn" [disabled]="loading || audioLoading">Generate story</button>
         </div>
-        <div class="form-row">
-          <button type="button" class="ghost" (click)="runTtsTest()" [disabled]="ttsTestLoading">
-            {{ ttsTestLoading ? 'Testing TTS...' : 'Test Gemini TTS' }}
-          </button>
-          <span class="muted" *ngIf="ttsTestAudio">TTS ready</span>
-        </div>
+<!--    LEAVE as is    -->
+<!--        <div class="form-row">-->
+<!--          <button type="button" class="ghost" (click)="runTtsTest()" [disabled]="ttsTestLoading">-->
+<!--            {{ ttsTestLoading ? 'Testing TTS...' : 'Test Gemini TTS' }}-->
+<!--          </button>-->
+<!--          <span class="muted" *ngIf="ttsTestAudio">TTS ready</span>-->
+<!--        </div>-->
+
         <div class="error" *ngIf="ttsTestError">{{ ttsTestError }}</div>
         <audio *ngIf="ttsTestAudio" [src]="ttsTestAudio" controls></audio>
         <div *ngIf="models.length" class="muted">{{ models.length }} models loaded</div>
@@ -55,24 +62,39 @@
     </div>
   </header>
 
-  <section class="panel" *ngIf="audioSrc">
+  <section class="panel audio-card" *ngIf="audioSrc">
     <h2>Audio narration</h2>
     <div class="realtime-hero">
-      <button type="button" class="realtime-btn" (click)="startRealtimeNarration()" [disabled]="realtimeReading || loading || audioLoading">
-        {{ realtimeReading ? 'Reading Live...' : '▶ Play Realtime' }}
+      <button
+        type="button"
+        class="realtime-btn play"
+        (click)="startRealtimeNarration()"
+        [disabled]="realtimeReading || loading || audioLoading"
+        aria-label="Play realtime narration"
+      >
+        <span class="icon-play"></span>
       </button>
-      <button type="button" class="realtime-btn stop" (click)="stopRealtimeNarration()" [disabled]="!realtimeReading">
-        ■ Stop Realtime
+      <div class="wave-visual full" [class.active]="realtimeReading">
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+      </div>
+      <button
+        type="button"
+        class="realtime-btn stop"
+        (click)="stopRealtimeNarration()"
+        [disabled]="!realtimeReading"
+        aria-label="Stop realtime narration"
+      >
+        <span class="icon-stop"></span>
       </button>
-    </div>
-    <div class="wave-visual" *ngIf="realtimeReading">
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
     </div>
     <audio [src]="audioSrc" controls></audio>
 
@@ -84,31 +106,45 @@
       </div>
     </div>
   </section>
-  <section class="panel" *ngIf="storyText && !audioSrc">
+  <section class="panel audio-card" *ngIf="storyText && !audioSrc">
     <h2>Audio narration</h2>
     <div class="realtime-hero">
-      <button type="button" class="realtime-btn" (click)="startRealtimeNarration()" [disabled]="realtimeReading || loading || audioLoading">
-        {{ realtimeReading ? 'Reading Live...' : '▶ Play Realtime' }}
+      <button
+        type="button"
+        class="realtime-btn play"
+        (click)="startRealtimeNarration()"
+        [disabled]="realtimeReading || loading || audioLoading"
+        aria-label="Play realtime narration"
+      >
+        <span class="icon-play"></span>
       </button>
-      <button type="button" class="realtime-btn stop" (click)="stopRealtimeNarration()" [disabled]="!realtimeReading">
-        ■ Stop Realtime
+      <div class="wave-visual full" [class.active]="realtimeReading">
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+      </div>
+      <button
+        type="button"
+        class="realtime-btn stop"
+        (click)="stopRealtimeNarration()"
+        [disabled]="!realtimeReading"
+        aria-label="Stop realtime narration"
+      >
+        <span class="icon-stop"></span>
       </button>
     </div>
-    <div class="wave-visual" *ngIf="realtimeReading">
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-      <span class="wave-bar"></span>
-    </div>
-    <p class="muted">Realtime reads sentence by sentence from the story text.</p>
     <p class="muted" *ngIf="audioLoading">Generating narration...</p>
-    <p class="muted" *ngIf="!audioLoading">Audio not available for this story yet.</p>
+
   </section>
 
-  <section class="panel" *ngIf="storyText">
+  <section class="panel story-card" *ngIf="storyText">
     <h2>Moonlight Story</h2>
     <p class="story">{{ storyText }}</p>
 
@@ -126,7 +162,7 @@
     </div>
   </section>
 
-  <section class="panel" *ngIf="proverbMatch">
+  <section class="panel story-card" *ngIf="proverbMatch">
     <h2>Proverb Match</h2>
     <div class="proverb-block" *ngIf="proverbMatch.best">
       <h3>Best Fit</h3>
